@@ -6,8 +6,8 @@ on:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    # Only runs if the PR is from exercism-solutions-syncer
-    if: github.event.pull_request.user.login == 'exercism-solutions-syncer'
+    # This change handles both the name and the [bot] suffix
+    if: contains(github.event.pull_request.user.login, 'exercism-solutions-syncer')
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -16,5 +16,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          # This command waits for checks to pass and then merges
-          gh pr merge ${{ github.event.pull_request.number }} --merge --auto --admin
+          gh pr merge ${{ github.event.pull_request.number }} --merge --admin
