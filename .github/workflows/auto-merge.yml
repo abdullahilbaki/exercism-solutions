@@ -6,26 +6,39 @@ on:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    # Add these permissions
+    # Granting explicit permissions to the job
     permissions:
       contents: write
       pull-requests: write
+
     if: contains(github.event.pull_request.user.login, 'exercism-solutions-syncer')
+    
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+          # Using your secret here ensures the checkout is authenticated as YOU
+          token: ${{ secrets.AUTO_MERGE_SECRET }}
 
       - name: Set Git Identity
         run: |
           git config --global user.name "abdullahilbaki"
           git config --global user.email "abdullahalbaqi00@gmail.com"
 
-      - name: Auto-merge PR (Squash)
+      - name: Create Activity Commit & Merge
         env:
           GH_TOKEN: ${{ secrets.AUTO_MERGE_SECRET }}
         run: |
-          # A brief pause helps prevent 'PR not found' errors
+          # 1. Add a small timestamp to a log file to trigger a "Contribution"
+          echo "Last Synced: $(date)" > sync_log.txt
+          git add sync_log.txt
+          git commit -m "chore: update sync log [skip ci]"
+          
+          # 2. Push this commit directly to the main branch
+          # This is the 'Green Square' trigger
+          git push origin HEAD:main
+          
+          # 3. Finalize the PR merge (wait 2 seconds for GitHub to sync)
           sleep 2
           gh pr merge ${{ github.event.pull_request.number }} --squash --auto
