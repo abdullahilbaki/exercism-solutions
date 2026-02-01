@@ -23,5 +23,4 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.AUTO_MERGE_SECRET }}
         run: |
-          # Wait for checks to pass (optional but safer) and then squash merge
-          gh pr merge ${{ github.event.pull_request.number }} --squash --admin --auto
+          gh pr merge ${{ github.event.pull_request.number }} --squash --admin
