@@ -6,14 +6,23 @@ on:
 jobs:
   auto-merge:
     runs-on: ubuntu-latest
-    # This change handles both the name and the [bot] suffix
     if: contains(github.event.pull_request.user.login, 'exercism-solutions-syncer')
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          # Fetch all history so we can modify commits if needed
+          fetch-depth: 0
 
-      - name: Auto-merge PR
-        env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set Git Identity
         run: |
-          gh pr merge ${{ github.event.pull_request.number }} --merge --admin
+          git config --global user.name "abdullahilbaki"
+          git config --global user.email "abdullahalbaqi00@gmail.com"
+
+      - name: Auto-merge PR (Squash)
+        env:
+          GH_TOKEN: ${{ secrets.AUTO_MERGE_SECRET }}
+        run: |
+          # Using --squash ensures a new commit is created.
+          # The --admin flag bypasses branch protection if necessary.
+          gh pr merge ${{ github.event.pull_request.number }} --squash --admin
